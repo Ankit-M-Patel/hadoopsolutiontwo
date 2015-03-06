@@ -24,10 +24,60 @@ public class MyMapperClass extends Mapper<LongWritable, Text, Text, IntWritable>
 		// Remove all the extra characters
 		// Count patterns 
 
+		String refinedString = refineValue(value,"sherlock","holmes");		
+		Pattern sherlockHolmes = Pattern.compile("sherlockholmes");        //Write both word as single which you want to find
+		Matcher sherlockHomesMatcher = sherlockHolmes.matcher(refinedString);
+
+		String refinedMulliganStr = refineValue(value,"buck","mulligan");		
+		Pattern buckMulligan = Pattern.compile("buckmulligan");        //Write both word as single which you want to find
+		Matcher buckMulliganMatcher = buckMulligan.matcher(refinedMulliganStr);
+
+		
+		try {
+
+			while (sherlockHomesMatcher.find()) {
+
+				System.out.println("*********Word Matched*********");
+				System.out.println("*************" + refinedString);
+				String matchedKey = sherlockHomesMatcher.group().toLowerCase();
+				// remove special characters and digits
+				if (!Character.isLetter(matchedKey.charAt(0))
+						|| Character.isDigit(matchedKey.charAt(0))) {
+					continue;
+				}
+
+				context.write(new Text(matchedKey), one);
+			}
+
+
+
+			while (buckMulliganMatcher.find()) {
+
+				System.out.println("*********Word Matched*********");
+				System.out.println("*************" + refinedMulliganStr);
+				String matchedKey = buckMulliganMatcher.group().toLowerCase();
+				// remove special characters and digits
+				if (!Character.isLetter(matchedKey.charAt(0))
+						|| Character.isDigit(matchedKey.charAt(0))) {
+					continue;
+				}
+
+				context.write(new Text(matchedKey), one);
+			}
+
+
+
+		} catch (InterruptedException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
+
+	private String refineValue(Text value, String firstWord , String secondWord) {
 		String line = value.toString().toLowerCase();
 		line  = line.replaceAll("[^a-zA-Z]", " ");
 
-		Pattern pattern = Pattern.compile("(see|deduce)");
+		Pattern pattern = Pattern.compile("("+firstWord+"|"+secondWord+")");
 		Matcher matcher = pattern.matcher(line);
 
 		String refinedString = "";
@@ -36,31 +86,7 @@ public class MyMapperClass extends Mapper<LongWritable, Text, Text, IntWritable>
 		{
 			refinedString += matcher.group(1);
 		}
-
-		int sum = 0;
-
-		Pattern p = Pattern.compile("seededuce");        //Write your word together that you want to find
-
-		Matcher m = p.matcher(refinedString);
-
-		try {
-
-			while (m.find()) {
-				String matchedKey = m.group().toLowerCase();
-				// remove special characters and digits
-				if (!Character.isLetter(matchedKey.charAt(0))
-						|| Character.isDigit(matchedKey.charAt(0))) {
-					continue;
-				}
-
-			context.write(new Text(matchedKey), one);
-			}
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	}
-
-
+		return refinedString;
+	}	
 }
 
